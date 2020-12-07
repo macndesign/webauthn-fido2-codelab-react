@@ -1,11 +1,18 @@
 import React from "react";
-import { registerCredential } from "./webauthn-client";
+import { registerCredential, authenticate } from "./webauthn-client";
 
 function App() {
+  const register = async () => {
+    await registerCredential();
+  };
+  const login = async () => {
+    await authenticate();
+  };
   return (
     <div>
       <p>Test Register</p>
-      <button onClick={registerCredential}>Register</button>
+      <button onClick={register}>Register</button>
+      <button onClick={login}>Login</button>
     </div>
   );
 }

@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License
  */
+require('dotenv').config();
 
 // init project
 const fs = require("fs");
 const express = require("express");
 const https = require("https");
 const session = require("express-session");
-const hbs = require("hbs");
 
 // SSL
 const key = fs.readFileSync("./key.pem");
@@ -31,11 +31,7 @@ const app = express();
 
 const server = https.createServer({ key: key, cert: cert }, app);
 
-// app.set("view engine", "html");
-// app.engine("html", hbs.__express);
-// app.set("views", "./views");
 app.use(express.json());
-// app.use(express.static("public"));
 app.use(express.static("build"));
 app.use(
   session({
@@ -134,12 +130,12 @@ app.use("/auth", auth);
 // listen for req :)
 const port = process.env.GLITCH_DEBUGGER ? null : 8080;
 
-const listener = server.listen(port || process.env.PORT, () => {
-  console.log("Your app is listening on port " + listener.address().port);
-});
-
-/*
-const listener = app.listen(port || process.env.PORT, () => {
-  console.log("Your app is listening on port " + listener.address().port);
-});
-*/
+if (process.env.NGROK) {
+  const listener = app.listen(port || process.env.PORT, () => {
+    console.log("Your app is listening on port " + listener.address().port);
+  });
+} else {
+  const listener = server.listen(port || process.env.PORT, () => {
+    console.log("Your app is listening on port " + listener.address().port);
+  });
+}

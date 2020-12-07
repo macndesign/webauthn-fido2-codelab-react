@@ -78,8 +78,7 @@ const getOrigin = (userAgent) => {
  * Set a `username` in the session.
  **/
 router.post("/username", (req, res) => {
-  // const username = req.body.username;
-  const username = "mario";
+  const username = req.body.username;
   // Only check username, no need to check password as this is a mock
   if (!username || !/[a-zA-Z0-9-_]+/.test(username)) {
     res.status(400).send({ error: "Bad request" });
@@ -310,9 +309,8 @@ router.post("/registerRequest", csrfCheck, sessionCheck, async (req, res) => {
  **/
 router.post("/registerResponse", csrfCheck, sessionCheck, async (req, res) => {
   const username = req.session.username;
-  const expectedChallenge = req.session.challenge;
-  // const expectedOrigin = getOrigin(req.get("User-Agent"));
-  const expectedOrigin = `${req.protocol}://${req.hostname}:${req.socket.localPort}`;
+  const expectedChallenge = base64url.encode(req.session.challenge);
+  const expectedOrigin = process.env.NGROK ? getOrigin(req.get("User-Agent")) : `${req.protocol}://${req.hostname}:${req.socket.localPort}`;
   const expectedRPID = process.env.HOSTNAME;
   const credId = req.body.id;
   const type = req.body.type;
@@ -419,6 +417,12 @@ router.post("/signinRequest", csrfCheck, async (req, res) => {
     });
     req.session.challenge = options.challenge;
 
+    // TODO: Login data
+    /* user.login = {
+      username: process.env.USERNAME,
+      password: process.env.PASSWORD
+    }; */
+
     res.json(options);
   } catch (e) {
     res.status(400).json({ error: e });
@@ -443,7 +447,7 @@ router.post("/signinRequest", csrfCheck, async (req, res) => {
 router.post("/signinResponse", csrfCheck, async (req, res) => {
   const { body } = req;
   const expectedChallenge = req.session.challenge;
-  const expectedOrigin = `${req.protocol}://${req.hostname}:${req.socket.localPort}`;
+  const expectedOrigin = process.env.NGROK ? getOrigin(req.get("User-Agent")) : `${req.protocol}://${req.hostname}:${req.socket.localPort}`;
   const expectedRPID = process.env.HOSTNAME;
 
   // Query the user
